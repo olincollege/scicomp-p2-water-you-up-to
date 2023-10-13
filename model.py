@@ -1,9 +1,8 @@
-
 import numpy as np
 
 # Sim-Defining Editable Variables
 
-#planetary radius
+planet_radius = #planetary radius
 #surface gravity
 #surface temp stuff
 #rate of sunlight rotation?
@@ -22,14 +21,29 @@ class Particle:
 
     def __init__(self):
         #polar coordinates: random
+        #hop: none
 
-    def jump(self):
-        #generate random direction
-        #for now, fixed distance based on vars
+    def move(self):
+        #check if moving - keep hopping
+        #check if in sun - start hop
+
+    def try_hop(self):
+        #generate hop if currently in sunlight
 
     def is_caught(self):
         # return T/F depending on if in polar region
 
+class Hop:
+
+    def __init__(self):
+        #random angle to move in direction of
+        #starting position
+        #starting angle of launch
+        #starting velocity (start with "constant" based on temp, eventually random)
+        #starting time
+
+    def new_pos(self):
+        #generate new position lol
 
 def first_spawn():
     #spawn num_particles particles
