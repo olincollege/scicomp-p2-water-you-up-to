@@ -4,7 +4,7 @@ import random
 # Sim-Defining Editable Variables
 
 planet_radius = 2439 #km, Mercury
-surface_gravity = 3705 #m/s^2, Mercury
+surface_gravity = 3.705 #km/s^2, Mercury
 temp_in_light = 500 #K, can go back and make more complex later
 rotational_speed = 10.892 #km/hr, planetary rotation
 radius_poles = 300 #km, location of stable regions
@@ -32,12 +32,13 @@ def random_polar_coords():
     return (planet_radius, theta, phi)
 
 
-def inside_sunlight():
+def inside_sunlight(coords):
     #checks if coordinates are inside the current circle of sunlight
     return()
 
-def inside_pole():
-    # checks if 
+def inside_pole(coords):
+    # checks if coordinates are inside the poles of the planet
+    return()
 
 class Particle:
 
@@ -46,27 +47,32 @@ class Particle:
         self.hop = None
 
     def move(self):
+        # VERY clunky way to deal with a particle landing on the surface
         if self.coordinates[0] <= planet_radius:
+            # photodissociation would go here
             self.coordinates[0] = planet_radius
             self.hop = None
 
+        #Continue current hop
         if self.hop != None:
             self.hop.move()
             self.coordinates = self.hop.current_pos()
+        # Or start a new one!
         elif inside_sunlight(self.coordinates):
-            self.hop = Hop()
+            self.hop = Hop(self.coordinates)
 
     def is_caught(self):
         # return T/F depending on if in polar region
+        return inside_pole(self.coordinates)
 
 class Hop:
 
-    def __init__(self):
+    def __init__(self, coords):
         #random angle to move in direction of
-        #starting position
+        self.current_coords = coords #starting coords
         #starting angle of launch
-        #starting velocity (start with "constant" based on temp, eventually random)
-        #starting time
+        self.current_velocity #starting velocity
+        self.start_time #starting time
 
     def current_pos(self):
         #return current position
