@@ -25,6 +25,26 @@ def view_update(system):
         WINDOW_WIDTH*view_buffer, WINDOW_HEIGHT*view_buffer,
         WINDOW_WIDTH*view_percent, WINDOW_HEIGHT*view_percent))
 
+    if 0 <= system.sun_pos <= 180:
+        pygame.draw.rect(WINDOW, 'yellow', pygame.Rect(
+            WINDOW_WIDTH*(view_buffer + system.sun_pos*view_percent/360),
+            WINDOW_HEIGHT*view_buffer,
+            WINDOW_WIDTH*view_percent/2,
+            WINDOW_HEIGHT*view_percent
+        ))
+    else:
+        pygame.draw.rect(WINDOW, 'yellow', pygame.Rect(
+            WINDOW_WIDTH*view_buffer, WINDOW_HEIGHT*view_buffer,
+            WINDOW_WIDTH*((system.sun_pos-180)*view_percent/360),
+            WINDOW_HEIGHT*view_percent
+        ))
+        pygame.draw.rect(WINDOW, 'yellow', pygame.Rect(
+            WINDOW_WIDTH*(view_buffer + system.sun_pos/360*view_percent),
+            WINDOW_HEIGHT*view_buffer,
+            WINDOW_WIDTH*((360-system.sun_pos)*view_percent/360),
+            WINDOW_HEIGHT*view_percent
+        ))
+
     for particle in system.particles_active:
         projected_coord = projection(particle.coordinates)
         pygame.draw.rect(WINDOW, 'red', pygame.Rect(

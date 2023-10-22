@@ -8,6 +8,8 @@ surface_gravity = 3.705  # km/s^2, Mercury
 temp_in_light = 500  # K, can go back and make more complex later
 rotational_speed = 10.892  # km/hr, planetary rotation
 radius_poles = 300  # km, location of stable regions
+num_particles = 1000
+polar_deg = 10
 
 # Setup (Pre-defined/Empty Variables, etc)
 
@@ -33,21 +35,27 @@ def random_polar_coords():
     return [planet_radius, theta, phi]
 
 
-def inside_sunlight(coords):
-    # checks if coordinates are inside the current circle of sunlight
-    return ()
-
-
-def inside_pole(coords):
-    # checks if coordinates are inside the poles of the planet
-    return ()
-
-
 class System:
 
     def __init__(self):
         self.particles_active = []
         self.particles_caught = []
+        self.sun_pos = 0  # phi of the furthestmost clockwise edge of sunlight
+
+    def update_model(self):
+        for particle in self.particles_active:
+            particle.move(self.sun_pos)
+            if particle.is_caught():
+                self.particles_caught.append(particle)
+        self.particles_active = [
+            particle for particle in self.particles_active if not particle.is_caught()]
+        self.sun_pos += 1
+        self.sun_pos = self.sun_pos % 360
+
+    def first_spawn(self):
+        # spawn num_particles particles
+        for _ in range(num_particles):
+            self.particles_active.append(Particle())
 
 
 class Particle:
@@ -56,7 +64,7 @@ class Particle:
         self.coordinates = random_polar_coords()
         self.hop = None
 
-    def move(self):
+    def move(self, sun_pos):
         # VERY clunky way to deal with a particle landing on the surface
         if self.coordinates[0] < planet_radius:
             # photodissociation would go here
@@ -68,13 +76,19 @@ class Particle:
             self.hop.move()
             self.coordinates = self.hop.current_coords
         # Or start a new one!
-        else:
-            # elif inside_sunlight(self.coordinates):
+        elif self.inside_sunlight(sun_pos):
             self.hop = Hop(self.coordinates)
 
     def is_caught(self):
-        # return T/F depending on if in polar region
-        return inside_pole(self.coordinates)
+        if self.coordinates[1] > 180-polar_deg or self.coordinates[1] < polar_deg:
+            return True
+        return False
+
+    def inside_sunlight(self, sun_pos):
+        # checks if coordinates are inside the current area of sunlight
+        if sun_pos <= self.coordinates[2] <= (sun_pos+180) % 360:
+            return True
+        return False
 
 
 class Hop:
@@ -89,4 +103,5 @@ class Hop:
     def move(self):
         # generate new position
         self.current_coords[1] = self.current_coords[1] + 1
-        self.current_coords[2] = self.current_coords[2] + 1
+        self.current_coords[2] = self.current_coords[2] + .2
+        self.current_coords[2] = self.current_coords[2] % 360
