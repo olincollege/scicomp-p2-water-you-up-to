@@ -3,19 +3,19 @@ import random
 
 # Sim-Defining Editable Variables
 
-planet_radius = 2439  # km, Mercury
-surface_gravity = 3.705  # km/s^2, Mercury
+planet_radius = 2439000  # m, Mercury
+surface_gravity = 3.705  # m/s^2, Mercury
 temp_in_light = 500  # K, can go back and make more complex later
-rotational_speed = 10.892  # km/hr, planetary rotation
-radius_poles = 300  # km, location of stable regions
+rotational_speed = 3.026  # m/s, planetary rotation
+radius_poles = 300000  # m, location of stable regions
 num_particles = 1000
 polar_deg = 10
 
 # Setup (Pre-defined/Empty Variables, etc)
 
-
+time_factor = 20
+angle_per_m = 360/(2*np.pi*planet_radius)
 # escape velocity
-# time spent during hop
 # photodissociation time scale
 
 
@@ -49,7 +49,7 @@ class System:
                 self.particles_caught.append(particle)
         self.particles_active = [
             particle for particle in self.particles_active if not particle.is_caught()]
-        self.sun_pos += 1
+        self.sun_pos += rotational_speed*angle_per_m*time_factor
         self.sun_pos = self.sun_pos % 360
 
     def first_spawn(self):
@@ -67,14 +67,14 @@ class Particle:
     def move(self, sun_pos):
         # VERY clunky way to deal with a particle landing on the surface
         if self.coordinates[0] < planet_radius:
-            # photodissociation would go here
+            self.hop.elapsed_time
+
             self.coordinates[0] = planet_radius
             self.hop = None
 
         # Continue current hop
         if self.hop != None:
-            self.hop.move()
-            self.coordinates = self.hop.current_coords
+            self.coordinates = self.hop.move()
         # Or start a new one!
         elif self.inside_sunlight(sun_pos):
             self.hop = Hop(self.coordinates)
@@ -94,14 +94,43 @@ class Particle:
 class Hop:
 
     def __init__(self, coords):
-        # random angle to move in direction of
-        self.current_coords = coords  # starting coords
-        # starting angle of launch
-        # self.current_velocity  # starting velocity
-        # self.start_time  # starting time
+        self.elapsed_time = 0
+        self.current_pos = coords  # starting coords
+        self.current_vel = self.init_velocity()
+        self.current_accl = [-surface_gravity, 0, 0]
 
     def move(self):
-        # generate new position
-        self.current_coords[1] = self.current_coords[1] + 1
-        self.current_coords[2] = self.current_coords[2] + .2
-        self.current_coords[2] = self.current_coords[2] % 360
+        self.calculate_pos()
+        self.calculate_vel()
+        self.calculate_accl()
+
+        return self.current_pos
+
+    def calculate_pos(self):
+        self.current_pos = list(map(
+            lambda a, b: a+b*time_factor, self.current_pos, self.current_vel))
+        self.current_pos[2] = self.current_pos[2] % 360
+
+    def calculate_vel(self):
+        self.current_vel = list(map(
+            lambda a, b: a+b*time_factor, self.current_vel, self.current_accl))
+
+    def calculate_accl(self):
+        current_grav = surface_gravity * \
+            (planet_radius/(planet_radius + self.current_pos[0])) ** 2
+        self.current_accl = [-current_grav, 0, 0]
+
+    def init_velocity(self):
+        launch_angle = random.random()*np.pi/2  # Ordinary Maxwell distribution
+        launch_direction = random.random()*2*np.pi
+        launch_polar = [np.sin(launch_angle),
+                        np.cos(launch_angle)*np.cos(launch_direction),
+                        np.cos(launch_angle)*np.sin(launch_direction)
+                        ]
+        mass_mole_h2o = .018
+        ideal_gas_const = 8.3145
+        velocity = (3*ideal_gas_const*temp_in_light /
+                    mass_mole_h2o) ** .5  # m/sec
+        m_sec_velocity = [velocity*polar_comp for polar_comp in launch_polar]
+        return [
+            m_sec_velocity[0], m_sec_velocity[1]*angle_per_m, m_sec_velocity[2]*angle_per_m]

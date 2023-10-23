@@ -1,11 +1,12 @@
 import pygame
+from model import planet_radius
 
 # Screen Setup
 WINDOW_WIDTH = 1600
 WINDOW_HEIGHT = WINDOW_WIDTH/2
 view_percent = .7
 view_buffer = (1-view_percent)/2
-particle_size = 2
+particle_size = 4
 
 
 # Animation Setup
@@ -46,8 +47,17 @@ def view_update(system):
         ))
 
     for particle in system.particles_active:
+        if particle.hop == None:
+            color = 'black'
+        else:
+            # Percentage convered
+            f = min(
+                1, max(0, (particle.coordinates[0] - planet_radius)/300000))
+
+            # No Pheromone: 135 116 72 -> Fully Covered: 97 65 15
+            color = (255, 255*f, 255*f)
         projected_coord = projection(particle.coordinates)
-        pygame.draw.rect(WINDOW, 'red', pygame.Rect(
+        pygame.draw.rect(WINDOW, color, pygame.Rect(
             projected_coord[0], projected_coord[1], particle_size, particle_size))
 
     for particle in system.particles_caught:
