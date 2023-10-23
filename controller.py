@@ -33,5 +33,11 @@ def main():
         # Render
         view_update(planet)
 
+        if not planet.particles_active:
+            print(len(planet.particles_caught) /
+                  (len(planet.particles_lost) + len(planet.particles_caught)))
+            pygame.quit()
+            sys.exit()
+
 
 main()

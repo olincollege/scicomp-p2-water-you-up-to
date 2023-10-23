@@ -13,7 +13,8 @@ polar_deg = radius_poles/(np.pi*planet_radius)*180
 
 # Setup (Pre-defined/Empty Variables, etc)
 
-time_factor = 1
+time_factor = 20
+sun_time_factor = 40
 angle_per_m = 360/(2*np.pi*planet_radius)
 escape_vel = 4300
 photo_loss = 10000  # s, photodestruction loss timescale
@@ -52,7 +53,7 @@ class System:
                 self.particles_lost.append(particle)
         self.particles_active = [
             particle for particle in self.particles_active if not particle.is_caught() and not particle.lost]
-        self.sun_pos += rotational_speed*angle_per_m*time_factor
+        self.sun_pos += rotational_speed*angle_per_m*time_factor*sun_time_factor
         self.sun_pos = self.sun_pos % 360
 
     def first_spawn(self):
@@ -92,7 +93,9 @@ class Particle:
 
     def inside_sunlight(self, sun_pos):
         # checks if coordinates are inside the current area of sunlight
-        if sun_pos <= self.coordinates[2] <= (sun_pos+180) % 360:
+        if sun_pos <= self.coordinates[2] <= sun_pos+180:
+            return True
+        if self.coordinates[2] < sun_pos-180:
             return True
         return False
 
