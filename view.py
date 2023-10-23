@@ -55,7 +55,7 @@ def view_update(system):
                 1, max(0, (particle.coordinates[0] - planet_radius)/300000))
 
             # No Pheromone: 135 116 72 -> Fully Covered: 97 65 15
-            color = (255, 255*f, 255*f)
+            color = (255, 255-255*f, 255-255*f)
         projected_coord = projection(particle.coordinates)
         pygame.draw.rect(WINDOW, color, pygame.Rect(
             projected_coord[0], projected_coord[1], particle_size, particle_size))
@@ -63,6 +63,11 @@ def view_update(system):
     for particle in system.particles_caught:
         projected_coord = projection(particle.coordinates)
         pygame.draw.rect(WINDOW, 'blue', pygame.Rect(
+            projected_coord[0], projected_coord[1], particle_size, particle_size))
+
+    for particle in system.particles_lost:
+        projected_coord = projection(particle.coordinates)
+        pygame.draw.rect(WINDOW, 'green', pygame.Rect(
             projected_coord[0], projected_coord[1], particle_size, particle_size))
 
     pygame.display.update()

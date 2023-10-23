@@ -9,14 +9,14 @@ temp_in_light = 500  # K, can go back and make more complex later
 rotational_speed = 3.026  # m/s, planetary rotation
 radius_poles = 300000  # m, location of stable regions
 num_particles = 1000
-polar_deg = 10
+polar_deg = radius_poles/(np.pi*planet_radius)*180
 
 # Setup (Pre-defined/Empty Variables, etc)
 
-time_factor = 20
+time_factor = 1
 angle_per_m = 360/(2*np.pi*planet_radius)
-# escape velocity
-# photodissociation time scale
+escape_vel = 4300
+photo_loss = 10000  # s, photodestruction loss timescale
 
 
 def random_polar_coords():
@@ -40,6 +40,7 @@ class System:
     def __init__(self):
         self.particles_active = []
         self.particles_caught = []
+        self.particles_lost = []
         self.sun_pos = 0  # phi of the furthestmost clockwise edge of sunlight
 
     def update_model(self):
@@ -47,8 +48,10 @@ class System:
             particle.move(self.sun_pos)
             if particle.is_caught():
                 self.particles_caught.append(particle)
+            if particle.lost:
+                self.particles_lost.append(particle)
         self.particles_active = [
-            particle for particle in self.particles_active if not particle.is_caught()]
+            particle for particle in self.particles_active if not particle.is_caught() and not particle.lost]
         self.sun_pos += rotational_speed*angle_per_m*time_factor
         self.sun_pos = self.sun_pos % 360
 
@@ -63,21 +66,24 @@ class Particle:
     def __init__(self):
         self.coordinates = random_polar_coords()
         self.hop = None
+        self.lost = False
 
     def move(self, sun_pos):
-        # VERY clunky way to deal with a particle landing on the surface
-        if self.coordinates[0] < planet_radius:
-            self.hop.elapsed_time
-
-            self.coordinates[0] = planet_radius
-            self.hop = None
-
         # Continue current hop
         if self.hop != None:
             self.coordinates = self.hop.move()
         # Or start a new one!
         elif self.inside_sunlight(sun_pos):
             self.hop = Hop(self.coordinates)
+            if self.hop.start_vel[0] > escape_vel:
+                self.lost = True
+
+        # VERY clunky way to deal with a particle landing on the surface
+        if self.coordinates[0] < planet_radius:
+            self.lost = self.photo_lost(
+                self.hop.elapsed_time)  # Photodissociation
+            self.coordinates[0] = planet_radius
+            self.hop = None
 
     def is_caught(self):
         if self.coordinates[1] > 180-polar_deg or self.coordinates[1] < polar_deg:
@@ -90,19 +96,27 @@ class Particle:
             return True
         return False
 
+    def photo_lost(self, time):
+        P = 1 - np.exp(-1*time/photo_loss)
+        if random.random() < P:
+            return True
+        return False
+
 
 class Hop:
 
     def __init__(self, coords):
         self.elapsed_time = 0
+        self.start_vel = self.init_velocity()
         self.current_pos = coords  # starting coords
-        self.current_vel = self.init_velocity()
+        self.current_vel = self.start_vel
         self.current_accl = [-surface_gravity, 0, 0]
 
     def move(self):
         self.calculate_pos()
         self.calculate_vel()
         self.calculate_accl()
+        self.elapsed_time += time_factor
 
         return self.current_pos
 
