@@ -1,5 +1,6 @@
 from model import System
 from view import view_update
+from view import init_background
 
 import pygame
 import sys
@@ -15,6 +16,7 @@ clock = pygame.time.Clock()
 def main():
     """Main loop"""
 
+    init_background()
     planet = System()
     planet.first_spawn()
 

@@ -31,8 +31,7 @@ def random_polar_coords():
     rand_v = random.random()
     phi = 360*rand_u
     # Unclusters the final distibution from around the poles
-    # theta = np.arccos(2*rand_v - 1)
-    theta = 180*rand_v
+    theta = np.arccos(2*rand_v - 1)*(180/np.pi)
     return [planet_radius, theta, phi]
 
 
@@ -47,10 +46,10 @@ class System:
     def update_model(self):
         for particle in self.particles_active:
             particle.move(self.sun_pos)
-            if particle.is_caught():
-                self.particles_caught.append(particle)
             if particle.lost:
                 self.particles_lost.append(particle)
+            elif particle.is_caught():
+                self.particles_caught.append(particle)
         self.particles_active = [
             particle for particle in self.particles_active if not particle.is_caught() and not particle.lost]
         self.sun_pos += rotational_speed*angle_per_m*time_factor*sun_time_factor

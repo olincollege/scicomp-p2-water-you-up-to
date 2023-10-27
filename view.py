@@ -1,5 +1,6 @@
 import pygame
 from model import planet_radius
+import numpy as np
 
 # Screen Setup
 WINDOW_WIDTH = 1600
@@ -71,3 +72,16 @@ def view_update(system):
             projected_coord[0], projected_coord[1], particle_size, particle_size))
 
     pygame.display.update()
+
+
+def init_background():
+    """Draws the grass in the background"""
+    img = pygame.image.load("img/space.jpg").convert()
+    imageWidth, imageHeight = img.get_size()
+    tilesX = int(np.ceil(WINDOW_WIDTH / imageWidth))
+    tilesY = int(np.ceil(WINDOW_HEIGHT / imageHeight))
+
+    # Loop over both and blit accordingly
+    for x in range(tilesX):
+        for y in range(tilesY):
+            WINDOW.blit(img, (.8*x * imageWidth, .8*y * imageHeight))
