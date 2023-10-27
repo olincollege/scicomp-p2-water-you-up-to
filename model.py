@@ -13,8 +13,8 @@ polar_deg = radius_poles/(np.pi*planet_radius)*180
 
 # Setup (Pre-defined/Empty Variables, etc)
 
-time_factor = 20
-sun_time_factor = 40
+time_factor = 20  # Speed of simulation, 1 being real-time
+sun_time_factor = 40  # Speed of rotation of the planet, equivalent to the rate at which the area of sunlight moves across the surface, 1 being real-time
 angle_per_m = 360/(2*np.pi*planet_radius)
 escape_vel = 4300
 photo_loss = 10000  # s, photodestruction loss timescale
