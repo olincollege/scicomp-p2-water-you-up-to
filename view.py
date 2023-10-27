@@ -22,54 +22,33 @@ def projection(coordinate):
             ((theta/180)*view_percent + view_buffer)*WINDOW_HEIGHT)
 
 
+colors = {
+    "light-gray": (237, 237, 237),
+    "dark-gray": (100, 100, 100),
+    "yellow": (255, 250, 162),
+    "red": (223, 152, 82),
+    "blue": (121, 158, 223),
+    "green": (36, 158, 31)
+}
+
+
 def view_update(system):
-    pygame.draw.rect(WINDOW, 'gray', pygame.Rect(
+    pygame.draw.rect(WINDOW, colors['light-gray'], pygame.Rect(
         WINDOW_WIDTH*view_buffer, WINDOW_HEIGHT*view_buffer,
         WINDOW_WIDTH*view_percent, WINDOW_HEIGHT*view_percent))
 
-    if 0 <= system.sun_pos <= 180:
-        pygame.draw.rect(WINDOW, 'yellow', pygame.Rect(
-            WINDOW_WIDTH*(view_buffer + system.sun_pos*view_percent/360),
-            WINDOW_HEIGHT*view_buffer,
-            WINDOW_WIDTH*view_percent/2,
-            WINDOW_HEIGHT*view_percent
-        ))
-    else:
-        pygame.draw.rect(WINDOW, 'yellow', pygame.Rect(
-            WINDOW_WIDTH*view_buffer, WINDOW_HEIGHT*view_buffer,
-            WINDOW_WIDTH*((system.sun_pos-180)*view_percent/360),
-            WINDOW_HEIGHT*view_percent
-        ))
-        pygame.draw.rect(WINDOW, 'yellow', pygame.Rect(
-            WINDOW_WIDTH*(view_buffer + system.sun_pos/360*view_percent),
-            WINDOW_HEIGHT*view_buffer,
-            WINDOW_WIDTH*((360-system.sun_pos)*view_percent/360),
-            WINDOW_HEIGHT*view_percent
-        ))
+    draw_sun(system)
 
     for particle in system.particles_active:
-        if particle.hop == None:
-            color = 'black'
-        else:
-            # Percentage convered
-            f = min(
-                1, max(0, (particle.coordinates[0] - planet_radius)/300000))
-
-            # No Pheromone: 135 116 72 -> Fully Covered: 97 65 15
-            color = (255, 255-255*f, 255-255*f)
-        projected_coord = projection(particle.coordinates)
-        pygame.draw.rect(WINDOW, color, pygame.Rect(
-            projected_coord[0], projected_coord[1], particle_size, particle_size))
+        draw_active_particle(particle)
 
     for particle in system.particles_caught:
-        projected_coord = projection(particle.coordinates)
-        pygame.draw.rect(WINDOW, 'blue', pygame.Rect(
-            projected_coord[0], projected_coord[1], particle_size, particle_size))
+        draw_caught_particle(particle)
 
     for particle in system.particles_lost:
-        projected_coord = projection(particle.coordinates)
-        pygame.draw.rect(WINDOW, 'green', pygame.Rect(
-            projected_coord[0], projected_coord[1], particle_size, particle_size))
+        draw_lost_particle(particle)
+
+    draw_border()
 
     pygame.display.update()
 
@@ -85,3 +64,73 @@ def init_background():
     for x in range(tilesX):
         for y in range(tilesY):
             WINDOW.blit(img, (.8*x * imageWidth, .8*y * imageHeight))
+
+
+def draw_border():
+    pygame.draw.rect(WINDOW, colors['dark-gray'], pygame.Rect(
+        WINDOW_WIDTH*view_buffer - particle_size *
+        2, WINDOW_HEIGHT*view_buffer - particle_size*2,
+        particle_size*2, WINDOW_HEIGHT*view_percent + (particle_size*4)))
+
+    pygame.draw.rect(WINDOW, colors['dark-gray'], pygame.Rect(
+        WINDOW_WIDTH*(1-view_buffer), WINDOW_HEIGHT *
+        view_buffer - particle_size*2,
+        particle_size*2, WINDOW_HEIGHT*view_percent + (particle_size*4)))
+
+    pygame.draw.rect(WINDOW, colors['dark-gray'], pygame.Rect(
+        WINDOW_WIDTH*view_buffer - particle_size*2, WINDOW_HEIGHT *
+        view_buffer - particle_size*2,
+        WINDOW_WIDTH*view_percent + (particle_size*4), particle_size*2))
+
+    pygame.draw.rect(WINDOW, colors['dark-gray'], pygame.Rect(
+        WINDOW_WIDTH*view_buffer - particle_size*2, WINDOW_HEIGHT *
+        (1-view_buffer),
+        WINDOW_WIDTH*view_percent + (particle_size*4), particle_size*2))
+
+
+def draw_sun(system):
+    if 0 <= system.sun_pos <= 180:
+        pygame.draw.rect(WINDOW, colors['yellow'], pygame.Rect(
+            WINDOW_WIDTH*(view_buffer + system.sun_pos*view_percent/360),
+            WINDOW_HEIGHT*view_buffer,
+            WINDOW_WIDTH*view_percent/2,
+            WINDOW_HEIGHT*view_percent
+        ))
+    else:
+        pygame.draw.rect(WINDOW, colors['yellow'], pygame.Rect(
+            WINDOW_WIDTH*view_buffer, WINDOW_HEIGHT*view_buffer,
+            WINDOW_WIDTH*((system.sun_pos-180)*view_percent/360),
+            WINDOW_HEIGHT*view_percent
+        ))
+        pygame.draw.rect(WINDOW, colors['yellow'], pygame.Rect(
+            WINDOW_WIDTH*(view_buffer + system.sun_pos/360*view_percent),
+            WINDOW_HEIGHT*view_buffer,
+            WINDOW_WIDTH*((360-system.sun_pos)*view_percent/360),
+            WINDOW_HEIGHT*view_percent
+        ))
+
+
+def draw_active_particle(particle):
+    if particle.hop == None:
+        particle_height = particle_size
+    else:
+        # Height off the ground as a function of highest possible height
+        # Size of drawn particle grows to up to double
+        particle_height = particle_size * (1 + min(
+            1, max(0, (particle.coordinates[0] - planet_radius)/300000)))
+
+    projected_coord = projection(particle.coordinates)
+    pygame.draw.rect(WINDOW, colors['green'], pygame.Rect(
+        projected_coord[0], projected_coord[1], particle_height, particle_height))
+
+
+def draw_caught_particle(particle):
+    projected_coord = projection(particle.coordinates)
+    pygame.draw.rect(WINDOW, colors['blue'], pygame.Rect(
+        projected_coord[0], projected_coord[1], particle_size, particle_size))
+
+
+def draw_lost_particle(particle):
+    projected_coord = projection(particle.coordinates)
+    pygame.draw.rect(WINDOW, colors['red'], pygame.Rect(
+        projected_coord[0], projected_coord[1], particle_size, particle_size))

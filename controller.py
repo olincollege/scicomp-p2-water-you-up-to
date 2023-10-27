@@ -36,7 +36,7 @@ def main():
         view_update(planet)
 
         if not planet.particles_active:
-            print(len(planet.particles_caught) /
+            print("Percent of particles that were captured in polar regions:" + len(planet.particles_caught) /
                   (len(planet.particles_lost) + len(planet.particles_caught)))
             pygame.quit()
             sys.exit()

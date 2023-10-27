@@ -18,6 +18,10 @@ sun_time_factor = 40
 angle_per_m = 360/(2*np.pi*planet_radius)
 escape_vel = 4300
 photo_loss = 10000  # s, photodestruction loss timescale
+mass_mole_h2o = .018  # g/mol, of water
+ideal_gas_const = 8.3145  # J/K*mol
+launch_velocity = (3*ideal_gas_const*temp_in_light /
+                   mass_mole_h2o) ** .5  # m/sec
 
 
 def random_polar_coords():
@@ -36,6 +40,8 @@ def random_polar_coords():
 
 
 class System:
+    """The full system: contains conditions, particles, and movement
+    """
 
     def __init__(self):
         self.particles_active = []
@@ -44,21 +50,32 @@ class System:
         self.sun_pos = 0  # phi of the furthestmost clockwise edge of sunlight
 
     def update_model(self):
+        # Move all active particles
         for particle in self.particles_active:
             particle.move(self.sun_pos)
+
+            # Check if they're still active
             if particle.lost:
                 self.particles_lost.append(particle)
             elif particle.is_caught():
                 self.particles_caught.append(particle)
+
+        # Remove inactive particles from full simulation
         self.particles_active = [
             particle for particle in self.particles_active if not particle.is_caught() and not particle.lost]
-        self.sun_pos += rotational_speed*angle_per_m*time_factor*sun_time_factor
-        self.sun_pos = self.sun_pos % 360
+
+        self.move_sun()
 
     def first_spawn(self):
-        # spawn num_particles particles
+        """Runs at the beginning of the simulation
+        """
+        # Spawn num_particles particles
         for _ in range(num_particles):
             self.particles_active.append(Particle())
+
+    def move_sun(self):
+        self.sun_pos += rotational_speed*angle_per_m*time_factor*sun_time_factor
+        self.sun_pos = self.sun_pos % 360
 
 
 class Particle:
@@ -69,6 +86,11 @@ class Particle:
         self.lost = False
 
     def move(self, sun_pos):
+        """Move, according to whether or not in sunlight
+
+        Args:
+            sun_pos (float): phi of the clockwise-most edge of sunlight
+        """
         # Continue current hop
         if self.hop != None:
             self.coordinates = self.hop.move()
@@ -78,20 +100,36 @@ class Particle:
             if self.hop.start_vel[0] > escape_vel:
                 self.lost = True
 
-        # VERY clunky way to deal with a particle landing on the surface
+        # Particle landing on the surface
         if self.coordinates[0] < planet_radius:
-            self.lost = self.photo_lost(
-                self.hop.elapsed_time)  # Photodissociation
             self.coordinates[0] = planet_radius
+
+            # Check if photodissociated
+            self.lost = self.photo_lost(
+                self.hop.elapsed_time)
+
+            # No longer hopping if on surface!
             self.hop = None
 
     def is_caught(self):
+        """Check if self is inside polar capture regions
+
+        Returns:
+            boolean: Whether particle is currently inside polar capture regions
+        """
         if self.coordinates[1] > 180-polar_deg or self.coordinates[1] < polar_deg:
             return True
         return False
 
     def inside_sunlight(self, sun_pos):
-        # checks if coordinates are inside the current area of sunlight
+        """Checks if coordinates are inside the current area of sunlight
+
+        Args:
+            sun_pos (float): phi of the clockwise-most edge of sunlight
+
+        Returns:
+            boolean: Whether particle is currently inside sunlight region
+        """
         if sun_pos <= self.coordinates[2] <= sun_pos+180:
             return True
         if self.coordinates[2] < sun_pos-180:
@@ -99,6 +137,14 @@ class Particle:
         return False
 
     def photo_lost(self, time):
+        """Photodissociation check
+
+        Args:
+            time (int): Time elapsed during the hop that just finished
+
+        Returns:
+            boolean: Whether molecule was lost during that hop
+        """
         P = 1 - np.exp(-1*time/photo_loss)
         if random.random() < P:
             return True
@@ -106,13 +152,15 @@ class Particle:
 
 
 class Hop:
+    """One jump of a molecule
+    """
 
     def __init__(self, coords):
         self.elapsed_time = 0
-        self.start_vel = self.init_velocity()
-        self.current_pos = coords  # starting coords
+        self.start_vel = self.init_velocity()  # Generate start veloctiy
+        self.current_pos = coords  # Record start coordinates
         self.current_vel = self.start_vel
-        self.current_accl = [-surface_gravity, 0, 0]
+        self.current_accl = [-surface_gravity, 0, 0]  # Acceleration is gravity
 
     def move(self):
         self.calculate_pos()
@@ -143,10 +191,8 @@ class Hop:
                         np.cos(launch_angle)*np.cos(launch_direction),
                         np.cos(launch_angle)*np.sin(launch_direction)
                         ]
-        mass_mole_h2o = .018
-        ideal_gas_const = 8.3145
-        velocity = (3*ideal_gas_const*temp_in_light /
-                    mass_mole_h2o) ** .5  # m/sec
-        m_sec_velocity = [velocity*polar_comp for polar_comp in launch_polar]
+        m_sec_velocity = [launch_velocity *
+                          polar_comp for polar_comp in launch_polar]  # m/sec launch velocity
+        # Convert to polar degrees for phi and theta
         return [
             m_sec_velocity[0], m_sec_velocity[1]*angle_per_m, m_sec_velocity[2]*angle_per_m]
