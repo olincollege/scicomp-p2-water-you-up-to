@@ -7,7 +7,6 @@ import sys
 from pygame.locals import *
 pygame.init()
 
-
 # Animation setup
 FPS = 60
 clock = pygame.time.Clock()
@@ -36,8 +35,8 @@ def main():
         view_update(planet)
 
         if not planet.particles_active:
-            print("Percent of particles that were captured in polar regions:" + len(planet.particles_caught) /
-                  (len(planet.particles_lost) + len(planet.particles_caught)))
+            print("Proportion of particles that were captured in polar regions: " + str(len(planet.particles_caught) /
+                  (len(planet.particles_lost) + len(planet.particles_caught))))
             pygame.quit()
             sys.exit()
 

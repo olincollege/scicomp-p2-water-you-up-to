@@ -13,8 +13,8 @@ polar_deg = radius_poles/(np.pi*planet_radius)*180
 
 # Setup (Pre-defined/Empty Variables, etc)
 
-time_factor = 20  # Speed of simulation, 1 being real-time
-sun_time_factor = 40  # Speed of rotation of the planet, equivalent to the rate at which the area of sunlight moves across the surface, 1 being real-time
+time_factor = 20  # Speed of simulation, 1/FPS being real-time
+sun_time_factor = 40  # Speed of rotation of the planet, functionally equivalent to the rate at which the area of sunlight moves across the surface, 1/FPS being real-time
 angle_per_m = 360/(2*np.pi*planet_radius)
 escape_vel = 4300
 photo_loss = 10000  # s, photodestruction loss timescale
@@ -185,6 +185,15 @@ class Hop:
         self.current_accl = [-current_grav, 0, 0]
 
     def init_velocity(self):
+        """
+        Generates an initial velocity vector from:
+        - A random angle off of the surface
+        - A random direction on the surface
+        - The constant launch_velocity
+
+        Returns:
+            list: An initial velocity vector in the form [R'(m/s), theta'(deg/s), phi'(deg/s)]
+        """
         launch_angle = random.random()*np.pi/2  # Ordinary Maxwell distribution
         launch_direction = random.random()*2*np.pi
         launch_polar = [np.sin(launch_angle),
