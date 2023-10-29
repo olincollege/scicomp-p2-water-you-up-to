@@ -3,6 +3,7 @@
 ![Screenshot from 2023-10-27 02-06-31](https://github.com/olincollege/scicomp-p2-water-you-up-to/assets/95325894/a9b7bb06-40f9-42b1-a597-f0bc75bbe68b)
 
 ## Running the Code
+
 ### Install
 
 This project uses two external python libraries:
@@ -14,11 +15,13 @@ Install them via `pip`:
 
     ```bash
     pip install numpy pygame
+    ```
 
 Then clone this repo:
 
     ```bash
     git clone git@github.com:olincollege/scicomp-p2-water-hoppn.git
+    ```
 
 ### Run
 
@@ -31,18 +34,20 @@ If you would want to change any of the starting conditions of the simulation, su
 ### Premise
 
 This simulation is intended to represent the modeling of cold traps on Mercury, and the movement of H2O molecules across its surface, specifically with reference to how those molecules either:
+
 - Get photodissociated by the sun or atmospheric conditions
 - Become trapped in the polar regions at the north and south poles (cold traps) of the planet, where the temperature is not sufficient to provoke jumping
 
-This simulation is primarily based on the '93 paper by Bryan J. Butler and Duane O. Muhleman called "Mercury: Full-Disk Radar Images and the Detection and Stability of Ice at the North Pole". Their work on this particular topic can be seen in their paper under the heading "Migration". I also incorporated some work from the follow-up '97 paper by Butler, "“The migration of volatiles on the surfaces of Mercury and the Moon.” 
+This simulation is primarily based on the '93 paper by Bryan J. Butler and Duane O. Muhleman called "Mercury: Full-Disk Radar Images and the Detection and Stability of Ice at the North Pole". Their work on this particular topic can be seen in their paper under the heading "Migration". I also incorporated some work from the follow-up '97 paper by Butler, "“The migration of volatiles on the surfaces of Mercury and the Moon.”
 
-My model uses the sunlight and temperature components of the '93 paper, but the random angle and height-based gravity components of the '97 paper. 
+My model uses the sunlight and temperature components of the '93 paper, but the random angle and height-based gravity components of the '97 paper.
 
 ### Implementation
 
 #### View
 
 Upon being run, this code creates a window with the visualization for my model, with three different colors of molecule:
+
 - Green molecules are active, and change size depending on how high off of the surface of the planet they are during their hop
 - Blue molecules are caught, specifically in the cold traps at the north and south poles of the planet
 - Orange molecules are lost, most commonly dissociated by the sun, but occasionally are lost because their initial launch led to their escaping the atmosphere of the planet.
@@ -64,13 +69,13 @@ In order to animate the paths of individual molecules, as mentioned in the '97 p
 Each molecule is its own agent that falls into one of three categories: active, captured, and lost. On any given step of the simulation, captured and lost particles don't do anything, but active particles follow the follow (simplified) steps:
 
 1. Check if in the middle of a hop
-1a. If true, continue the hop
+   1a. If true, continue the hop
 2. If not hopping & in sunlight, hop!
 3. Check if landing from a hop
-3a. If true, check if this hop resulted in a loss
-3aa. If true, mark as lost
+   3a. If true, check if this hop resulted in a loss
+   3aa. If true, mark as lost
 4. Check if in a polar region
-4a. If true, mark as caught
+   4a. If true, mark as caught
 
 Being marked as either lost or caught removes a particle from the "active" list, making sure it doesn't move any more.
 
@@ -90,7 +95,7 @@ The controller is the main file that is run. It initializes and calls both the v
 
 ### Results
 
-The '97 paper found that the percentage of molecules that wound up trapped in in the polar cold traps, under the (nearest approximation of the) conditions in my model hovers at around 9%, which would suggest the presence of polar ice caps, as it's not an insignificant percentage in this case. 
+The '97 paper found that the percentage of molecules that wound up trapped in in the polar cold traps, under the (nearest approximation of the) conditions in my model hovers at around 9%, which would suggest the presence of polar ice caps, as it's not an insignificant percentage in this case.
 
 **_My model returns proportions between 10 and 12%_**, which is remarkably close, and is in fact VERY close to the results of the '93 paper, which derived an expected value of 12%, and found a simulated value of 10%.
 
@@ -102,7 +107,7 @@ The '97 paper found that the percentage of molecules that wound up trapped in in
 
 ### Use
 
-This model is primarily useful in understanding the paths of individual molecules on their journeys across the surface. This would be very useful in an education sense, and as a tool to aid further understanding of the system by modification of discrete factors like gravity to account for different planets, and to see how that changes our working model. 
+This model is primarily useful in understanding the paths of individual molecules on their journeys across the surface. This would be very useful in an education sense, and as a tool to aid further understanding of the system by modification of discrete factors like gravity to account for different planets, and to see how that changes our working model.
 
 Particularly as more data gets collected, and as scientists want to know how the system and the individual agents inside it are affected, my code is adaptable enough to encourage playing around, although not robust enough to run anything like a gradient descent to work backwards from desired behaviors to obtain data (yet!)
 
