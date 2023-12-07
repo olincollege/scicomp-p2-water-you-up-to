@@ -20,7 +20,7 @@ Install them via `pip`:
 Then clone this repo:
 
     ```bash
-    git clone git@github.com:olincollege/scicomp-p2-water-hoppn.git
+    git clone git@github.com:olincollege/scicomp-p2-water-you-up-to.git
     ```
 
 ### Run
